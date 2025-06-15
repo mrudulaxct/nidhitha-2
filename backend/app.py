@@ -13,6 +13,27 @@ qkd = QKDSimulator()
 maes = MAESEncryption()
 blockchain = SimpleBlockchain()
 
+# Root route to fix 404 error
+@app.route('/')
+def home():
+    return jsonify({
+        'message': 'Quantum Cryptography API is running!',
+        'version': '1.0.0',
+        'endpoints': {
+            'encrypt': '/api/encrypt (POST)',
+            'decrypt': '/api/decrypt (POST)', 
+            'blockchain': '/api/blockchain (GET)',
+            'verify': '/api/verify (POST)'
+        },
+        'status': 'active',
+        'documentation': {
+            'encrypt': 'Send POST request with {"message": "your_text"} to encrypt data',
+            'decrypt': 'Send POST request with {"encrypted_data": "...", "quantum_key": "..."} to decrypt',
+            'blockchain': 'GET request to view the complete blockchain',
+            'verify': 'Send POST request with {"message": "...", "hash": "..."} to verify integrity'
+        }
+    })
+
 @app.route('/api/encrypt', methods=['POST'])
 def encrypt_data():
     try:
@@ -98,6 +119,19 @@ def verify_integrity():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+# Health check endpoint for monitoring
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': time.time(),
+        'components': {
+            'qkd_simulator': 'active',
+            'maes_encryption': 'active',
+            'blockchain': 'active'
+        }
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
