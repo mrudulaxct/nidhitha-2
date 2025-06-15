@@ -13,20 +13,6 @@ qkd = QKDSimulator()
 maes = MAESEncryption()
 blockchain = SimpleBlockchain()
 
-# Add this root route to fix the 404 error
-@app.route('/')
-def home():
-    return jsonify({
-        'message': 'Quantum Cryptography API is running!',
-        'endpoints': {
-            'encrypt': '/api/encrypt (POST)',
-            'decrypt': '/api/decrypt (POST)', 
-            'blockchain': '/api/blockchain (GET)',
-            'verify': '/api/verify (POST)'
-        },
-        'status': 'active'
-    })
-
 @app.route('/api/encrypt', methods=['POST'])
 def encrypt_data():
     try:
@@ -61,19 +47,57 @@ def encrypt_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-# ... rest of your routes remain the same ...
-
 @app.route('/api/decrypt', methods=['POST'])
 def decrypt_data():
-    # your existing code
-    
+    try:
+        data = request.json
+        encrypted_data = data['encrypted_data']
+        quantum_key = data['quantum_key']
+        
+        start_time = time.time()
+        decrypted_data = maes.decrypt(encrypted_data, quantum_key)
+        decryption_time = (time.time() - start_time) * 1000
+        
+        # Add to blockchain
+        blockchain.add_block({
+            'action': 'decrypt',
+            'data_hash': maes.get_hash(decrypted_data),
+            'timestamp': time.time()
+        })
+        
+        return jsonify({
+            'decrypted_data': decrypted_data,
+            'decryption_time': round(decryption_time, 3),
+            'merkle_root': blockchain.get_merkle_root()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
 @app.route('/api/blockchain', methods=['GET'])
 def get_blockchain():
-    # your existing code
-    
+    return jsonify({
+        'chain': blockchain.chain,
+        'length': len(blockchain.chain),
+        'merkle_root': blockchain.get_merkle_root()
+    })
+
 @app.route('/api/verify', methods=['POST'])
 def verify_integrity():
-    # your existing code
+    try:
+        data = request.json
+        message = data['message']
+        expected_hash = data['hash']
+        
+        actual_hash = maes.get_hash(message)
+        is_valid = actual_hash == expected_hash
+        
+        return jsonify({
+            'is_valid': is_valid,
+            'actual_hash': actual_hash,
+            'expected_hash': expected_hash
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
