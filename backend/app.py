@@ -13,10 +13,34 @@ qkd = QKDSimulator()
 maes = MAESEncryption()
 blockchain = SimpleBlockchain()
 
+# Root route to fix 404 error
+@app.route('/')
+def home():
+    return jsonify({
+        'message': 'Quantum Cryptography API is running!',
+        'version': '1.0.0',
+        'endpoints': {
+            'encrypt': '/api/encrypt (POST)',
+            'decrypt': '/api/decrypt (POST)', 
+            'blockchain': '/api/blockchain (GET)',
+            'verify': '/api/verify (POST)'
+        },
+        'status': 'active',
+        'documentation': {
+            'encrypt': 'Send POST request with {"message": "your_text"} to encrypt data',
+            'decrypt': 'Send POST request with {"encrypted_data": "...", "quantum_key": "..."} to decrypt',
+            'blockchain': 'GET request to view the complete blockchain',
+            'verify': 'Send POST request with {"message": "...", "hash": "..."} to verify integrity'
+        }
+    })
+
 @app.route('/api/encrypt', methods=['POST'])
 def encrypt_data():
     try:
         data = request.json
+        if not data or 'message' not in data:
+            return jsonify({'error': 'Missing message in request body'}), 400
+            
         plaintext = data['message']
         
         # QKD Key Generation
@@ -45,12 +69,15 @@ def encrypt_data():
             'merkle_root': blockchain.get_merkle_root()
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/decrypt', methods=['POST'])
 def decrypt_data():
     try:
         data = request.json
+        if not data or 'encrypted_data' not in data or 'quantum_key' not in data:
+            return jsonify({'error': 'Missing encrypted_data or quantum_key in request body'}), 400
+            
         encrypted_data = data['encrypted_data']
         quantum_key = data['quantum_key']
         
@@ -71,20 +98,26 @@ def decrypt_data():
             'merkle_root': blockchain.get_merkle_root()
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/blockchain', methods=['GET'])
 def get_blockchain():
-    return jsonify({
-        'chain': blockchain.chain,
-        'length': len(blockchain.chain),
-        'merkle_root': blockchain.get_merkle_root()
-    })
+    try:
+        return jsonify({
+            'chain': blockchain.chain,
+            'length': len(blockchain.chain),
+            'merkle_root': blockchain.get_merkle_root()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/verify', methods=['POST'])
 def verify_integrity():
     try:
         data = request.json
+        if not data or 'message' not in data or 'hash' not in data:
+            return jsonify({'error': 'Missing message or hash in request body'}), 400
+            
         message = data['message']
         expected_hash = data['hash']
         
@@ -97,7 +130,23 @@ def verify_integrity():
             'expected_hash': expected_hash
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
+
+# Health check endpoint for monitoring
+@app.route('/health')
+def health_check():
+    try:
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': time.time(),
+            'components': {
+                'qkd_simulator': 'active',
+                'maes_encryption': 'active',
+                'blockchain': 'active'
+            }
+        })
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
