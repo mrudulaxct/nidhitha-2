@@ -103,7 +103,7 @@ async function decryptData() {
 
 async function getBlockchain() {
     try {
-        const response = await fetch(`${API_BASE}/blockchain`);
+        const response = await fetch(`${API_BASE}/api/blockchain`);
         const data = await response.json();
         
         if (response.ok) {
