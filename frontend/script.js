@@ -1,4 +1,4 @@
-const API_BASE = 'https://cyber-security-trust-model-main1-1.onrender.com';
+const API_BASE = 'https://cyber-security-trust-model-main1.onrender.com';
 
 let currentEncryptionData = {};
 
