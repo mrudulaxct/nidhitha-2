@@ -1,91 +1,104 @@
+/* Import fonts */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f4f4f9;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  padding-top: 40px;
 }
 
-.container {
+.wrapper {
+  width: 100%;
   max-width: 800px;
-  margin: 30px auto;
   padding: 20px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 25px 30px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  color: #f0f0f0;
 }
 
 h1, h2 {
+  margin-top: 0;
   text-align: center;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .subtitle {
   text-align: center;
-  color: #555;
+  font-weight: 300;
+  color: #ccc;
   margin-bottom: 20px;
 }
 
-.section {
-  margin-top: 30px;
-}
-
-textarea, input[type="text"], input[type="password"] {
+textarea,
+input[type="text"],
+input[type="password"] {
   width: 100%;
   padding: 12px;
-  margin-top: 8px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  resize: vertical;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  outline: none;
+  font-size: 14px;
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: #bbb;
 }
 
 button {
-  padding: 10px 20px;
-  background-color: #2d89ef;
-  color: white;
+  display: inline-block;
+  width: 100%;
+  padding: 12px;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: 10px;
+  background-color: #4fc3f7;
+  color: #000;
   font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background-color: #1e70bf;
+  background-color: #03a9f4;
+  color: #fff;
 }
 
 .result {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 15px;
   margin-top: 10px;
-  padding: 10px;
-  background: #ecf0f1;
-  border-left: 5px solid #2ecc71;
-  border-radius: 5px;
+  border-left: 4px solid #4caf50;
+  border-radius: 8px;
+  font-size: 14px;
+  white-space: pre-wrap;
 }
 
 .result.error {
-  border-left-color: #e74c3c;
-}
-
-.blockchain-block {
-  margin-bottom: 10px;
-  padding: 10px;
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-
-.block-header {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.metric {
-  display: block;
-  margin-top: 5px;
-  font-weight: bold;
+  border-left-color: #e53935;
 }
 
 .error {
-  color: red;
-  font-size: 0.9em;
+  color: #ff6b6b;
+  font-size: 13px;
   text-align: center;
 }
