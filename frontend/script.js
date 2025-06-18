@@ -1,3 +1,22 @@
+// Hardcoded credentials
+const USERNAME = "admin";
+const PASSWORD = "1234";
+
+// Login logic
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  const error = document.getElementById("loginError");
+
+  if (user === USERNAME && pass === PASSWORD) {
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("appSection").style.display = "block";
+    error.textContent = "";
+  } else {
+    error.textContent = "Invalid username or password!";
+  }
+}
+
 const API_BASE = 'https://cyber-security-trust-model-main1.onrender.com';
 
 let currentEncryptionData = {};
