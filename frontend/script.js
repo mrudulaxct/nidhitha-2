@@ -1,157 +1,173 @@
 const API_BASE = 'https://cyber-security-trust-model-main1.onrender.com';
 
-// Hardcoded login credentials
-const USERNAME = 'admin';
-const PASSWORD = '1234';
+let currentEncryptionData = {};
 
-// Login logic
-function login() {
-  const user = document.getElementById('username').value;
-  const pass = document.getElementById('password').value;
-  const error = document.getElementById('loginError');
-
-  if (user === USERNAME && pass === PASSWORD) {
-    document.getElementById('loginCard').style.display = 'none';
-    document.getElementById('appContent').style.display = 'block';
-    error.textContent = '';
-  } else {
-    error.textContent = 'Invalid username or password.';
-  }
-}
-
-// Encrypt data
 async function encryptData() {
-  const plaintext = document.getElementById('plaintext').value;
-  if (!plaintext.trim()) {
-    alert('Please enter a message to encrypt.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/api/encrypt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: plaintext }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      document.getElementById('encryptResult').innerHTML = `
-        <div class="result">
-          <strong>Encrypted:</strong> ${data.encrypted_data}<br/>
-          <strong>Quantum Key:</strong> ${data.quantum_key}<br/>
-          <strong>Block Hash:</strong> ${data.block_hash}<br/>
-          <strong>Merkle Root:</strong> ${data.merkle_root}
-        </div>
-      `;
-
-      // Autofill for decryption
-      document.getElementById('encryptedData').value = data.encrypted_data;
-      document.getElementById('quantumKey').value = data.quantum_key;
-
-      updateMetrics(data);
-    } else {
-      throw new Error(data.error || 'Encryption failed');
+    const plaintext = document.getElementById('plaintext').value;
+    if (!plaintext.trim()) {
+        alert('Please enter a message to encrypt');
+        return;
     }
-  } catch (error) {
-    document.getElementById('encryptResult').innerHTML = `
-      <div class="result error">
-        <strong>Error:</strong> ${error.message}
-      </div>
-    `;
-  }
-}
-
-// Decrypt data
-async function decryptData() {
-  const encryptedData = document.getElementById('encryptedData').value;
-  const quantumKey = document.getElementById('quantumKey').value;
-
-  if (!encryptedData.trim() || !quantumKey.trim()) {
-    alert('Enter both encrypted data and quantum key.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/api/decrypt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        encrypted_data: encryptedData,
-        quantum_key: quantumKey,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      document.getElementById('decryptResult').innerHTML = `
-        <div class="result">
-          <strong>Decrypted:</strong> ${data.decrypted_data}<br/>
-          <strong>Merkle Root:</strong> ${data.merkle_root}
-        </div>
-      `;
-
-      updateMetrics(data, true);
-    } else {
-      throw new Error(data.error || 'Decryption failed');
-    }
-  } catch (error) {
-    document.getElementById('decryptResult').innerHTML = `
-      <div class="result error">
-        <strong>Error:</strong> ${error.message}
-      </div>
-    `;
-  }
-}
-
-// Fetch blockchain
-async function getBlockchain() {
-  try {
-    const response = await fetch(`${API_BASE}/api/blockchain`);
-    const data = await response.json();
-
-    if (response.ok) {
-      let html = `<div class="result"><strong>Merkle Root:</strong> ${data.merkle_root}<br/><br/>`;
-      data.chain.forEach((block) => {
-        html += `
-          <div class="blockchain-block">
-            <strong>Block #${block.index}</strong><br/>
-            Hash: ${block.hash}<br/>
-            Previous: ${block.previous_hash}<br/>
-            Time: ${new Date(block.timestamp * 1000).toLocaleString()}<br/>
-            Data: ${JSON.stringify(block.data)}
-          </div><br/>
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/encrypt`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: plaintext })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            currentEncryptionData = data;
+            
+            document.getElementById('encryptResult').innerHTML = `
+                <div class="result success">
+                    <h3>Encryption Successful!</h3>
+                    <p><strong>Encrypted Data:</strong> ${data.encrypted_data}</p>
+                    <p><strong>Quantum Key:</strong> ${data.quantum_key}</p>
+                    <p><strong>Block Hash:</strong> ${data.block_hash}</p>
+                    <p><strong>Merkle Root:</strong> ${data.merkle_root}</p>
+                </div>
+            `;
+            
+            // Auto-fill decryption fields
+            document.getElementById('encryptedData').value = data.encrypted_data;
+            document.getElementById('quantumKey').value = data.quantum_key;
+            
+            // Update metrics
+            updateMetrics(data);
+            
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        document.getElementById('encryptResult').innerHTML = `
+            <div class="result error">
+                <h3>Encryption Failed</h3>
+                <p>Error: ${error.message}</p>
+            </div>
         `;
-      });
-      html += `</div>`;
-      document.getElementById('blockchainResult').innerHTML = html;
-    } else {
-      throw new Error('Failed to load blockchain');
     }
-  } catch (error) {
-    document.getElementById('blockchainResult').innerHTML = `
-      <div class="result error">Error: ${error.message}</div>
-    `;
-  }
 }
 
-// Update performance metrics
-function updateMetrics(data) {
-  const metricsDiv = document.getElementById('metrics');
-  let html = '';
-
-  if (data.encryption_time) {
-    html += `<span class="metric">Encryption Time: ${data.encryption_time}ms</span><br/>`;
-  }
-  if (data.decryption_time) {
-    html += `<span class="metric">Decryption Time: ${data.decryption_time}ms</span><br/>`;
-  }
-  if (data.qkd_time) {
-    html += `<span class="metric">QKD Time: ${data.qkd_time}ms</span><br/>`;
-  }
-
-  html += `<span class="metric">System Accuracy: 99.84%</span>`;
-  metricsDiv.innerHTML = html;
+async function decryptData() {
+    const encryptedData = document.getElementById('encryptedData').value;
+    const quantumKey = document.getElementById('quantumKey').value;
+    
+    if (!encryptedData.trim() || !quantumKey.trim()) {
+        alert('Please enter both encrypted data and quantum key');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/decrypt`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                encrypted_data: encryptedData,
+                quantum_key: quantumKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('decryptResult').innerHTML = `
+                <div class="result success">
+                    <h3>Decryption Successful!</h3>
+                    <p><strong>Decrypted Message:</strong> ${data.decrypted_data}</p>
+                    <p><strong>Merkle Root:</strong> ${data.merkle_root}</p>
+                </div>
+            `;
+            
+            // Update metrics
+            updateMetrics(data, true);
+            
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        document.getElementById('decryptResult').innerHTML = `
+            <div class="result error">
+                <h3>Decryption Failed</h3>
+                <p>Error: ${error.message}</p>
+            </div>
+        `;
+    }
 }
+
+async function getBlockchain() {
+    try {
+        const response = await fetch(`${API_BASE}/api/blockchain`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            let blockchainHtml = `
+                <div class="result">
+                    <h3>Blockchain Ledger (${data.length} blocks)</h3>
+                    <p><strong>Merkle Root:</strong> ${data.merkle_root}</p>
+                    <div style="max-height: 400px; overflow-y: auto;">
+            `;
+            
+            data.chain.forEach(block => {
+                blockchainHtml += `
+                    <div class="blockchain-block">
+                        <div class="block-header">Block #${block.index}</div>
+                        <div class="block-data">
+                            <p><strong>Hash:</strong> ${block.hash}</p>
+                            <p><strong>Previous Hash:</strong> ${block.previous_hash}</p>
+                            <p><strong>Timestamp:</strong> ${new Date(block.timestamp * 1000).toLocaleString()}</p>
+                            <p><strong>Data:</strong> ${typeof block.data === 'object' ? JSON.stringify(block.data) : block.data}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            blockchainHtml += '</div></div>';
+            document.getElementById('blockchainResult').innerHTML = blockchainHtml;
+            
+        } else {
+            throw new Error('Failed to fetch blockchain');
+        }
+    } catch (error) {
+        document.getElementById('blockchainResult').innerHTML = `
+            <div class="result error">
+                <h3>Error</h3>
+                <p>Error: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+function updateMetrics(data, isDecryption = false) {
+    const metricsDiv = document.getElementById('metrics');
+    let metricsHtml = '<h3>Performance Metrics</h3>';
+    
+    if (data.encryption_time) {
+        metricsHtml += `<span class="metric">Encryption Time: ${data.encryption_time}ms</span>`;
+    }
+    
+    if (data.decryption_time) {
+        metricsHtml += `<span class="metric">Decryption Time: ${data.decryption_time}ms</span>`;
+    }
+    
+    if (data.qkd_time) {
+        metricsHtml += `<span class="metric">QKD Time: ${data.qkd_time}ms</span>`;
+    }
+    
+    // Simulate accuracy (in real implementation, this would be calculated differently)
+    const accuracy = 99.84;
+    metricsHtml += `<span class="metric">System Accuracy: ${accuracy}%</span>`;
+    
+    metricsDiv.innerHTML = metricsHtml;
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Cyber-Security Trust Model Initialized');
+});
