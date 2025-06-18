@@ -10,7 +10,7 @@ async function encryptData() {
     }
     
     try {
-        const response = await fetch(`${API_BASE}/encrypt`, {
+        const response = await fetch(`${API_BASE}/api/encrypt`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ async function decryptData() {
     }
     
     try {
-        const response = await fetch(`${API_BASE}/decrypt`, {
+        const response = await fetch(`${API_BASE}/api/decrypt`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
